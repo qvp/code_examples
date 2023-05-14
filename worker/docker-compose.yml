@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  worker_alpha:
+    build: .
+    command: python -m worker.main --name Alpha
+    depends_on:
+      - rabbit
+    links:
+      - rabbit
+    volumes:
+      - .:/code
+
+  rabbit:
+    image: rabbitmq:3.11.9-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "admin"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
