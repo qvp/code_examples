@@ -23,9 +23,11 @@
 
 Чтобы создать новую задачу нужно выбрать очередь задач в разделе "Queues" и добавить новую задачу в очередь "wa_task_queue":  
 Успешное: `{"id": 123, "session_id": 456, "payload": {"iteration_count": 60}}`  
-Вызывающее ошибку: `{"id": 123, "session_id": 456, "payload": {"raise_error": true}}`  
-![alt](https://github.com/qvp/code_examples/worker_async/blob/main/rabbitmq_gui_queue.png?raw=true)
+Вызывающее ошибку: `{"id": 123, "session_id": 456, "payload": {"raise_error": true}}`
+
+![alt](https://github.com/qvp/code_examples/blob/main/worker_async/rabbit_gui_queue.png?raw=true)
 
 Чтобы отправить команду воркеру на завершение сессии нужно во вкладке "Exchanges" выбрать "wa_command_exchange" и отправить в него команду:  
-`{ "type": "session_canceled", "payload": {"session_id": 456}}`  
-![alt](https://github.com/qvp/code_examples/worker_async/blob/main/rabbitmq_gui_cancel.png?raw=true)
+`{ "type": "session_canceled", "payload": {"session_id": 456}}`
+
+![alt](https://github.com/qvp/code_examples/blob/main/worker_async/rabbit_gui_cancel.png?raw=true)
