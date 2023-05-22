@@ -1,7 +1,7 @@
 ### Примеры кода
 
 [worker_asyncio](https://github.com/qvp/code_examples/tree/main/worker_asyncio) (2023)  
-Асинхронный воркер, построен на asyncio, aiormq, multiprocessing, docker.  
+Асинхронный воркер, построен на asyncio, aiormq, multiprocessing, RabbitMQ, docker.  
 Представляет из себя слегка упрощенную версию worker_multiprocessing.  
 Сделано для сравнения разных подходов к прослушиванию нескольких очередей.
 
