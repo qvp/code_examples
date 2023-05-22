@@ -1,4 +1,4 @@
-Асинхронный воркер, построен на asyncio, aiormq, multiprocessing, docker
+Воркер, основанный на процессах. Построен на multiprocessing, pika, RabbitMQ, Docker
 
 Пример показывает как я решал задачу на проекте, большинство логики опущено для наглядности и соображений NDA.
 
@@ -22,12 +22,12 @@
 (Логин admin пароль admin)  
 
 Чтобы создать новую задачу нужно выбрать очередь задач в разделе "Queues" и добавить новую задачу в очередь "wa_task_queue":  
-Успешное: `{"id": 123, "session_id": 456, "payload": {"iteration_count": 60}}`  
+Успешное: `{"id": 123, "session_id": 456, "payload": {}}`  
 Вызывающее ошибку: `{"id": 123, "session_id": 456, "payload": {"raise_error": true}}`
 
-![alt](https://github.com/qvp/code_examples/blob/main/worker_async/rabbit_gui_queue.png?raw=true)
+![alt](https://github.com/qvp/code_examples/blob/main/worker_multiprocessing/rabbit_gui_queue.png?raw=true)
 
 Чтобы отправить команду воркеру на завершение сессии нужно во вкладке "Exchanges" выбрать "wa_command_exchange" и отправить в него команду:  
-`{ "type": "session_canceled", "payload": {"session_id": 456}}`
+`{ "message_type": "session_canceled","session_id": 456}`
 
-![alt](https://github.com/qvp/code_examples/blob/main/worker_async/rabbit_gui_cancel.png?raw=true)
+![alt](https://github.com/qvp/code_examples/blob/main/worker_multiprocessing/rabbit_gui_cancel.png?raw=true)
