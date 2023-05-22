@@ -3,7 +3,7 @@ version: '3'
 services:
   worker_alpha:
     build: .
-    command: python -m worker_async.main --name Alpha
+    command: python -m worker_asyncio.main --name Alpha
     depends_on:
       - rabbit
     links:
@@ -13,7 +13,7 @@ services:
 
   worker_beta:
     build: .
-    command: python -m worker_async.main --name Beta
+    command: python -m worker_asyncio.main --name Beta
     depends_on:
       - rabbit
     links:
@@ -23,7 +23,7 @@ services:
 
   worker_gama:
     build: .
-    command: python -m worker_async.main --name Gama
+    command: python -m worker_asyncio.main --name Gama
     depends_on:
       - rabbit
     links:

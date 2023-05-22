@@ -3,7 +3,7 @@ version: '3'
 services:
   worker_alpha:
     build: .
-    command: python -m worker.main --name Alpha
+    command: python -m worker_multiprocessing.main --name Alpha
     depends_on:
       - rabbit
     links:
