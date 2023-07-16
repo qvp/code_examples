@@ -5,6 +5,11 @@
 Представляет из себя слегка упрощенную версию worker_multiprocessing.  
 Сделано для сравнения разных подходов к прослушиванию нескольких очередей.
 
+[zip_objects_multiprocessing](https://github.com/qvp/code_examples/tree/main/zip_objects_multiprocessing) (2023)  
+Пример параллельной обработки большого количества архивированных xml-файлов.
+Выполнено с использованием модуля multiprocessing.
+Подробнее описано в README по ссылке.
+
 [worker_multiprocessing](https://github.com/qvp/code_examples/tree/main/worker_multiprocessing) (2020)  
 Воркер, основанный на процессах. Построен на multiprocessing, pika, RabbitMQ, Docker  
 Более комплексная версия воркера с отслеживанием прогресса.  
