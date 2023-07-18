@@ -4,57 +4,97 @@
 Для демонстрации выбрал упрощенный вариант реализации похожей задачи.
 """
 
+import io
+import os
+import traceback
+from dataclasses import dataclass
 from typing import List, Any
 from queue import Queue
 from multiprocessing import Pool, Manager
 from abc import ABC, abstractmethod
 
 
-class TaskPoolRunner(ABC):
-    def __init__(self, tasks: List):
+@dataclass
+class TaskResult:
+    task: Any
+    result: Any = None
+    error: str = None
+    traceback_str: str = None
+
+
+class TaskExecutor(ABC):
+    @classmethod
+    def process_task(cls, queue: Queue, task: Any):
+        task_result = TaskResult(task=task)
+        try:
+            task_result.result = cls.run(queue, task)
+        except Exception as e:
+            task_result.error = str(e)
+            task_result.traceback_str = traceback.format_exc()
+        queue.put(task_result)
+
+    @classmethod
+    @abstractmethod
+    def run(cls, queue: Queue, task: Any):
+        """Parallel execution in separate process"""
+        pass
+
+    @abstractmethod
+    def on_progress(self, message: Any):
+        """Sequentially executes in main process"""
+        pass
+
+
+class TaskRunner:
+    def __init__(self, task_executor: TaskExecutor, tasks: List, skip_errors=False):
+        self._task_executor = task_executor
         self._tasks = tasks
         self._queue = Manager().Queue()
-        self._tasks_done = 0
-        self._result = None
+        self._skip_errors = skip_errors
+        self._completed_tasks_count = 0
+        self._results: List[TaskResult] = []
+        self._num_processes = os.cpu_count() if len(self._tasks) > os.cpu_count() else len(self._tasks)
 
     def run(self) -> Any:
-        with Pool() as pool:
+        with Pool(processes=self._num_processes) as pool:
 
             for task in self._tasks:
-                pool.apply_async(self.process_task, (self._queue, task))
+                pool.apply_async(self._task_executor.process_task, (self._queue, task))
 
-            while self._tasks_done < len(self._tasks):
+            while self._completed_tasks_count < len(self._tasks):
                 message = self._queue.get()
-                self.on_message(message)
 
-        return self._result
+                if type(message) == TaskResult:
+                    self._completed_tasks_count += 1
+                    self._results.append(message)
+                    if message.error and not self._skip_errors:
+                        break
+                    continue
 
-    @staticmethod
-    @abstractmethod
-    def process_task(queue: Queue, task: Any):
-        pass
-
-    @abstractmethod
-    def on_message(self, message: Any):
-        pass
+                self._task_executor.on_progress(message)
+        return self._results
 
 
-class SquareSumTask(TaskPoolRunner):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._result: int = 0
+class CreateFileParallelTask(TaskExecutor):
+    def __init__(self, file):
+        self._file = file
 
-    @staticmethod
-    def process_task(queue: Queue, task: int):
-        message = task ** 2
-        queue.put(message)
+    @classmethod
+    def run(cls, queue: Queue, task: int):
+        if task == 2:
+            raise Exception('Just not 2!')
+        pid = os.getpid()
+        queue.put(f'Task: {task}, process id: {pid}\r\n')
 
-    def on_message(self, message: int):
-        self._result += message
-        self._tasks_done += 1
+    def on_progress(self, message: str):
+        self._file.write(message)
 
 
 if __name__ == '__main__':
-    ss_task = SquareSumTask(tasks=[1, 2, 3])
-    result = ss_task.run()
-    print(result)
+    with io.StringIO() as result_file:
+        ss_task = CreateFileParallelTask(result_file)
+        runner = TaskRunner(task_executor=ss_task, tasks=[1, 2, 3, 4, 5], skip_errors=True)
+        results = runner.run()
+        print('TaskResult objects:', results)
+        print('File result:')
+        print(result_file.getvalue())
