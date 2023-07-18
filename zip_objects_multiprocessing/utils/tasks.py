@@ -4,7 +4,6 @@
 Для демонстрации выбрал упрощенный вариант реализации похожей задачи.
 """
 
-import io
 import os
 import traceback
 from dataclasses import dataclass
@@ -73,28 +72,3 @@ class TaskRunner:
                     self._task_executor.on_progress(message)
 
         return self._results
-
-
-class CreateFileParallelTask(TaskExecutor):
-    def __init__(self, file):
-        self._file = file
-
-    @classmethod
-    def run(cls, queue: Queue, task: int):
-        if task == 2:
-            raise Exception('Just not 2!')
-        pid = os.getpid()
-        queue.put(f'Task: {task}, process id: {pid}\r\n')
-
-    def on_progress(self, message: str):
-        self._file.write(message)
-
-
-if __name__ == '__main__':
-    with io.StringIO() as result_file:
-        cf_task = CreateFileParallelTask(result_file)
-        runner = TaskRunner(task_executor=cf_task, tasks=[1, 2, 3, 4, 5], skip_errors=True)
-        results = runner.run()
-        print('TaskResult objects:', results)
-        print('File result:')
-        print(result_file.getvalue())
