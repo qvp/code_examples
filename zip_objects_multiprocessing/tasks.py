@@ -49,29 +49,29 @@ class TaskRunner:
     def __init__(self, task_executor: TaskExecutor, tasks: List, skip_errors=False):
         self._task_executor = task_executor
         self._tasks = tasks
-        self._queue = Manager().Queue()
         self._skip_errors = skip_errors
         self._completed_tasks_count = 0
         self._results: List[TaskResult] = []
         self._num_processes = os.cpu_count() if len(self._tasks) > os.cpu_count() else len(self._tasks)
 
     def run(self) -> Any:
-        with Pool(processes=self._num_processes) as pool:
+        with Pool(processes=self._num_processes) as pool, Manager() as manager:
+            queue = manager.Queue()
 
             for task in self._tasks:
-                pool.apply_async(self._task_executor.process_task, (self._queue, task))
+                pool.apply_async(self._task_executor.process_task, (queue, task))
 
             while self._completed_tasks_count < len(self._tasks):
-                message = self._queue.get()
+                message = queue.get()
 
                 if type(message) == TaskResult:
                     self._completed_tasks_count += 1
                     self._results.append(message)
                     if message.error and not self._skip_errors:
                         break
-                    continue
+                else:
+                    self._task_executor.on_progress(message)
 
-                self._task_executor.on_progress(message)
         return self._results
 
 
@@ -92,8 +92,8 @@ class CreateFileParallelTask(TaskExecutor):
 
 if __name__ == '__main__':
     with io.StringIO() as result_file:
-        ss_task = CreateFileParallelTask(result_file)
-        runner = TaskRunner(task_executor=ss_task, tasks=[1, 2, 3, 4, 5], skip_errors=True)
+        cf_task = CreateFileParallelTask(result_file)
+        runner = TaskRunner(task_executor=cf_task, tasks=[1, 2, 3, 4, 5], skip_errors=True)
         results = runner.run()
         print('TaskResult objects:', results)
         print('File result:')
